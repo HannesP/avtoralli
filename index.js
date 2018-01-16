@@ -58,5 +58,5 @@ app.get('/rooms/:roomid', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect('/rooms/new');
+    res.redirect('rooms/new');
 });
