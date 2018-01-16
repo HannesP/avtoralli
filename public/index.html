@@ -1,0 +1,135 @@
+<head>
+    <meta name="content-type" content="text/html; encoding=utf-8">
+</head>
+
+<style>
+    body {
+        background: black;
+        color: white;
+        text-align: center;
+    }
+    
+    a {
+        color: red;
+    }
+    
+    canvas {
+        width: 800;
+        height: 600;
+    }
+</style>
+
+<body>
+<h1>AVTORALLI</h1>
+<p><a href="/rooms/new">NEW GAME</a></p>
+<canvas tabindex="1" width="400" height="300" id="canvas" style="background-color: white"></canvas>
+<script>
+    window.onload = () => {
+        const {pathname} = this.location;
+        const ws = new WebSocket('ws://localhost:8081' + pathname, 'echo-protocol');
+        
+        ws.addEventListener('open', e => {});
+        ws.addEventListener('message', e => {
+            const event = JSON.parse(e.data);
+            switch (event.type) {
+                case 'GameStarted': {
+                    state.players = event.players.concat();
+                    state.targets = event.targets.concat();
+                    state.hasStarted = true;
+                    break;
+                }
+                case 'TargetBecameActive': {
+                    state.activeTarget = event.index;
+                    break;
+                }
+                case 'PlayerTurned': {
+                    const {player, angle} = event;
+                    state.players[player].angle = angle;
+                    break;
+                }
+                case 'PlayerMoved': {
+                    const {player, x, y} = event;
+                    state.players[player].x = x;
+                    state.players[player].y = y;
+                    break;
+                }
+                case 'PlayerScored': {
+                    const {player} = event;
+                    state.players[player].score++;
+                    break;
+                }
+            }
+        });
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.addEventListener('keydown', function(e) {
+            const command = {
+                37: 'PlayerTurnLeft',
+                38: 'PlayerAccelerate',
+                39: 'PlayerTurnRight',
+                40: 'PlayerStopAccelerate',
+            }[e.keyCode];
+            if (command !== undefined) {
+                ws.send(JSON.stringify({command}));
+            }
+        });
+        
+        const state = {
+            players: [],
+            targets: [],
+            activeTarget: 0,
+            time: 0,
+            hasStarted: false,
+        };
+        
+        const draw = () => {
+            state.time += 1/30; // Move to localUpdate later; don't hardcode
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+
+            const scores = state.players.map(p => p.score);
+            ctx.fillText(scores.join(' - '), 10, 20);
+            
+            if (!state.hasStarted) {
+                ctx.fillText('Waiting for other player...', 100, 100);
+            }
+            
+            for (const [i, target] of state.targets.entries()) {
+                const {x, y} = target;
+                const isActive = state.activeTarget === i;
+                ctx.beginPath();
+                ctx.fillStyle = state.activeTarget == i ? 'red' : 'blue';
+                ctx.arc(x, y, isActive ? 7 + Math.sin(4*state.time) : 5, 0, 2*Math.PI);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            for (const player of state.players) {
+                const {x, y, angle} = player;
+                const width = 10;
+                const length = 20;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(-angle);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(-length/2, -width/2, length, width);
+                ctx.restore();
+                
+                ctx.save();
+                ctx.fillStyle = 'cyan';
+                ctx.fillRect(x, y, 2, 2);
+                ctx.restore();
+            }
+        };
+        
+        setInterval(draw, 1000/30);
+//        setInterval(localUpdate, 1000/30);
+        
+        canvas.focus();
+    };
+</script>
+</body>
