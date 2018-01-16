@@ -14,10 +14,14 @@ class Game extends BaseGame {
             return {
                 x: i ? 20 : this.width - 20,
                 y: this.height / 2,
-                angle: 0,
+                angle: i === 0 ? 0 : Math.PI,
+                
                 angularVelocity: 0,
-                acceleration: 0,
+                angularAcceleration: 0,
+                
                 velocity: 0,
+                acceleration: 0,
+                
                 score: 0,
             };
         });
@@ -36,11 +40,11 @@ class Game extends BaseGame {
     
     setUpHandlers() {
         this.on('PlayerTurnLeft', (player, params) => {
-            player.angularVelocity = -1;
+            player.angularAcceleration = -2;
         });
     
         this.on('PlayerTurnRight', (player, params) => {
-            player.angularVelocity = 1;
+            player.angularAcceleration = 2;
         });
     
         this.on('PlayerAccelerate', (player, params) => {
@@ -68,6 +72,9 @@ class Game extends BaseGame {
         
         // for (const [player, i] of this.players) {
         this.players.forEach((player, i) => {
+            player.angularVelocity += dt * player.angularAcceleration;
+            player.angularVelocity = Math.sign(player.angularVelocity) * Math.min(1, Math.abs(player.angularVelocity));
+            
             if (player.angularVelocity !== 0) {
                 player.angle += dt * player.angularVelocity;
                 player.angle %= 2*Math.PI;
@@ -97,7 +104,6 @@ class Game extends BaseGame {
     
     start() {
         super.start();
-        console.log(this.players);
         this.bufferEvent({
             type: 'GameStarted',
             players: this.players.map(player => ({x: player.x, y: player.y, angle: player.angle, score: player.score})),
