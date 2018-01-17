@@ -14,7 +14,7 @@ class Game extends BaseGame {
             return {
                 x: i ? 20 : this.width - 20,
                 y: this.height / 2,
-                angle: i === 0 ? 0 : Math.PI,
+                angle: i === 0 ? Math.PI : 0,
                 
                 angularVelocity: 0,
                 angularAcceleration: 0,
@@ -22,11 +22,30 @@ class Game extends BaseGame {
                 velocity: 0,
                 acceleration: 0,
                 
+                breaking: false,
+                turning: false,
+                
                 score: 0,
             };
         });
 
-        this.targets = Array(20).fill().map(i => {
+        const numX = 5;
+        const numY = 4;
+        this.targets = [];
+        for (let x = 0; x < numX; x++) {
+            for (let y = 0; y < numY; y++) {
+                const padding = this.width / 10;
+                const devAmount = this.width / 25;
+                const deviation = () => 2*(Math.random() - 0.5) * devAmount;
+                          
+                this.targets.push({
+                    x: deviation() + padding + (this.width - 2*padding)/(numX - 1)*x,
+                    y: deviation() + padding + (this.height - 2*padding)/(numY - 1)*y,
+                });
+            }
+        }
+        
+        Array(20).fill().map(i => {
             const x = i % 5;
             const y = Math.floor(i / 5);
             return {
@@ -40,19 +59,28 @@ class Game extends BaseGame {
     
     setUpHandlers() {
         this.on('PlayerTurnLeft', (player, params) => {
-            player.angularAcceleration = -2;
+            player.angularAcceleration = -4;
+            player.turning = true;
         });
     
         this.on('PlayerTurnRight', (player, params) => {
-            player.angularAcceleration = 2;
+            player.angularAcceleration = 4;
+            player.turning = true;
         });
     
         this.on('PlayerAccelerate', (player, params) => {
-            player.velocity = 50;
+            player.acceleration = 50;
+            player.breaking = false;
         });
     
         this.on('PlayerStopAccelerate', (player, params) => {
-            player.velocity = -3;
+            player.acceleration = 0;
+            player.breaking = true;
+        });
+        
+        this.on('PlayerStopTurning', (player, params) => {
+            player.angularAcceleration = 0;
+            player.turning = false;
         });
     }
     
@@ -72,6 +100,10 @@ class Game extends BaseGame {
         
         // for (const [player, i] of this.players) {
         this.players.forEach((player, i) => {
+            if (player.turning === false) {
+                player.angularVelocity -= dt * Math.sign(player.angularVelocity);
+            }
+            
             player.angularVelocity += dt * player.angularAcceleration;
             player.angularVelocity = Math.sign(player.angularVelocity) * Math.min(1, Math.abs(player.angularVelocity));
             
@@ -81,12 +113,24 @@ class Game extends BaseGame {
                 this.bufferEvent({type: 'PlayerTurned', player: i, angle: player.angle});
             }
         
-            player.velocity += dt * player.acceleration;
-            player.velocity = Math.min(player.velocity, 30);
+            if (player.breaking) {
+                if (player.velocity > 0) {
+                    player.velocity -= dt * 50;   
+                }
+            } else {
+                player.velocity += dt * player.acceleration;
+                player.velocity = Math.min(player.velocity, 100);
+            }
             
             if (player.velocity !== 0) {
                 player.x += dt * Math.cos(player.angle) * player.velocity;
                 player.y -= dt * Math.sin(player.angle) * player.velocity;
+                
+                player.x = Math.min(player.x, this.width);
+                player.x = Math.max(player.x, 0);
+                player.y = Math.min(player.y, this.height);
+                player.y = Math.max(player.y, 0);
+                
                 this.bufferEvent({type: 'PlayerMoved', player: i, x: player.x, y: player.y, velocity: player.velocity});
             }
 

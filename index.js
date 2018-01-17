@@ -6,13 +6,41 @@ const uuid = require('uuid');
 
 const Room = require('./src/room');
 
-const httpServer = http.createServer((req, res) => res.end());
-httpServer.listen(8081, () => {});
+const app = express();
+app.listen(8080);
+
+const rooms = {};
+
+app.get('/avtoralli/rooms/new', (req, res) => {
+    const id = uuid.v4();
+    rooms[id] = new Room(2);
+    res.redirect('/avtoralli/rooms/' + id);
+});
+
+app.get('/avtoralli/rooms/:roomid', (req, res) => {
+    const id = req.params.roomid;
+    if (!(id in rooms)) {
+        res.sendStatus(404);
+        return;
+    } 
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/avtoralli', (req, res) => {
+    res.redirect('/avtoralli/rooms/new');
+});
+
+const port = process.env.PORT || 8080;
+
+const httpServer = http.createServer(app);
+httpServer.listen(port, () => {});
 
 const wsServer = new WebSocketServer({httpServer});
 wsServer.on('request', req => {
     try {
-        const [rootSlash, resource, id] = req.resource.split('/');
+        const parts = req.resource.split('/');
+        const resource = parts[2], id = parts[3];
+        
         if (resource !== 'rooms' || !(id in rooms)) {
             req.reject();
         }
@@ -35,28 +63,4 @@ wsServer.on('request', req => {
     } catch (err) {
         console.error('Request failed: ' + err);
     }
-});
-
-const app = express();
-app.listen(8080);
-
-const rooms = {};
-
-app.get('/rooms/new', (req, res) => {
-    const id = uuid.v4();
-    rooms[id] = new Room(2);
-    res.redirect('/rooms/' + id);
-});
-
-app.get('/rooms/:roomid', (req, res) => {
-    const id = req.params.roomid;
-    if (!(id in rooms)) {
-        res.sendStatus(404);
-        return;
-    } 
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/', (req, res) => {
-    res.redirect('rooms/new');
 });
