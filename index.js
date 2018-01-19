@@ -7,7 +7,6 @@ const uuid = require('uuid');
 const Room = require('./src/room');
 
 const app = express();
-app.listen(8080);
 
 const rooms = {};
 
