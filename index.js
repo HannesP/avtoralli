@@ -48,11 +48,10 @@ wsServer.on('request', req => {
         const room = rooms[id];
         room.connect(conn);
         
-        conn.on('message', wsMsg => {
+        conn.on('message', msg => {
             try {
-                const msg = JSON.parse(wsMsg.utf8Data);
-                const {command, params} = msg;
-                room.handleCommand(conn, command, params || {});
+                const {type, params} = JSON.parse(msg.utf8Data);
+                room.handleCommand(conn, type, params || {});
             } catch (err) {
                 console.error(err);
             }

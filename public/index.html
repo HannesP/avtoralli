@@ -72,21 +72,21 @@
         
         
         canvas.addEventListener('keydown', e => {
-            const command = {
+            const type = {
                 37: 'PlayerTurnRight',
                 38: 'PlayerAccelerate',
                 39: 'PlayerTurnLeft',
                 40: 'PlayerStopAccelerate',
             }[e.keyCode];
-            if (command !== undefined) {
-                ws.send(JSON.stringify({command}));
+            if (type !== undefined) {
+                ws.send(JSON.stringify({type}));
             }
         });
         
         canvas.addEventListener('keyup', e => {
             const {keyCode} = e;
             if (keyCode === 37 || keyCode === 39) {
-                ws.send(JSON.stringify({command: 'PlayerStopTurning'}));
+                ws.send(JSON.stringify({type: 'PlayerStopTurning'}));
             }
         });
         
