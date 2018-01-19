@@ -8,8 +8,8 @@ class Game extends BaseGame {
         this.height = 300;
         this.initGame();
     }
-    
-    initGame() {
+
+    initPlayers() {
         this.players = [0, 1].map(i => {
             return {
                 x: i ? 20 : this.width - 20,
@@ -27,8 +27,10 @@ class Game extends BaseGame {
                 
                 score: 0,
             };
-        });
+        }); 
+    }
 
+    initTargets() {
         const numX = 5;
         const numY = 4;
         this.targets = [];
@@ -44,15 +46,11 @@ class Game extends BaseGame {
                 });
             }
         }
-        
-        Array(20).fill().map(i => {
-            const x = i % 5;
-            const y = Math.floor(i / 5);
-            return {
-                x: Math.round(10 + Math.random() * this.width - 10),
-                y: Math.round(10 + Math.random() * this.height - 10),
-            };
-        });
+    }
+    
+    initGame() {
+        this.initPlayers();
+        this.initTargets();
         
         this.currentTarget = 0;
     }
