@@ -25,6 +25,7 @@
 <body>
 <h1>AVTORALLI</h1>
 <p><a href="/avtoralli/rooms/new">NEW GAME</a></p>
+<p><a href="https://github.com/hannesp/avtoralli">GITHUB</a></p>
 <canvas tabindex="1" width="400" height="300" id="canvas" style="background-color: white"></canvas>
 <script>
     window.onload = () => {
@@ -138,9 +139,11 @@
                 ctx.translate(x, y);
                 ctx.rotate(-angle);
                 
+                ctx.beginPath();
                 ctx.moveTo(-length/2, -width/2);
                 ctx.lineTo(-length/2, width/2);
                 ctx.lineTo(length/2, 0);
+                ctx.closePath();
 
                 ctx.fillStyle = 'white';
                 ctx.fill();                
