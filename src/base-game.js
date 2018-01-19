@@ -39,7 +39,13 @@ class BaseGame {
     
     start() {
         this.isRunning = true;
-        this.updateHandle = setInterval(() => this.update(), this.timeStep);
+        this.updateHandle = setInterval(() => {
+            try {
+                this.update();
+            } catch (err) {
+                console.log(err);
+            }
+        }, this.timeStep);
     }
     
     stop() {
