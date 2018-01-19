@@ -39,11 +39,12 @@ class BaseGame {
     
     start() {
         this.isRunning = true;
-        setInterval(() => this.update(), this.timeStep);
+        this.updateHandle = setInterval(() => this.update(), this.timeStep);
     }
     
     stop() {
         this.isRunning = false;
+        clearInterval(this.updateHandle);
     }
     
     update() {

@@ -57,7 +57,9 @@ wsServer.on('request', req => {
             }
         });
         
-        conn.on('close', (code, desc) => {});
+        conn.on('close', (code, desc) => {
+            room.disconnect(conn);
+        });
     } catch (err) {
         console.error('Request failed: ' + err);
     }

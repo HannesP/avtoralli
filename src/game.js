@@ -51,7 +51,7 @@ class Game extends BaseGame {
     initGame() {
         this.initPlayers();
         this.initTargets();
-        
+
         this.currentTarget = 0;
     }
     

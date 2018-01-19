@@ -20,27 +20,37 @@ class Room {
             this.game.start();
             
             const fps = 1000/30;
-            setInterval(() => this.pumpEvents(), fps); // todo: save handler and unregister when game stops
+            this.pumpHandle = setInterval(() => this.pumpEvents(), fps);
         }
     }
     
-    disconnect(conn) { 
-        if (this.connectedPlayers.indexOf(conn) !== -1) {
+    disconnect(conn) {
+        const playerIndex = this.connectedPlayers.indexOf(conn);
+        const specIndex = this.connectedSpectators.indexOf(conn);
+
+        if (playerIndex !== -1) {
             this.game.stop();
-        } else {
-            this.connectedSpectators = this.connectedSpectators.filter(spec !== conn);
+            this.broadcast({type: 'PlayerDisconnected', player});
+            this.connectedPlayers.splice(playerIndex, 1);
+            clearInterval(this.pumpHandle);
+        } else if (specIndex !== -1) {
+            this.connectedSpectators.splice(specIndex, 1);
         }
+    }
+
+    broadcast(event) {
+        const clients = this.connectedPlayers.concat(this.connectedSpectators);
+
+        for (const client of clients) {
+            client.sendUTF(JSON.stringify(event));
+        } 
     }
     
     pumpEvents() {
-        const clients = this.connectedPlayers.concat(this.connectedSpectators);
         const events = this.game.flushEvents();
-
-        for (const client of clients) {
-            for (const event of events) {
-                //console.log(JSON.stringify(event));
-                client.sendUTF(JSON.stringify(event));
-            }
+        
+        for (const event of events) {
+            this.broadcast(event);
         }
     }
     

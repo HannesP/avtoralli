@@ -62,14 +62,16 @@
                     state.players[player].score++;
                     break;
                 }
+                case 'PlayerDisconnected': {
+                    const {player} = event;
+                    alert('Player ' + player + ' disconnected.');
+                    break;
+                }
             }
         });
         
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        
-        ctx.clearColor = 'gray';
-        
         
         canvas.addEventListener('keydown', e => {
             const type = {
