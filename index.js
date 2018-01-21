@@ -8,7 +8,7 @@ const Room = require('./src/room');
 
 const rooms = {};
 
-const maxNumberOfRooms = 2;
+const maxNumberOfRooms = 10;
 
 const app = express();
 
