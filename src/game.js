@@ -61,7 +61,7 @@ class Game extends BaseGame {
             this.slimes.push({
                 x: this.width / 2 + 0.3*this.width*Math.cos(a),
                 y: this.height / 2 + 0.3*this.height*Math.sin(a),
-                size: this.width/10,
+                size: this.width/12,
             });
         }
     }
