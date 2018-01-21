@@ -40,6 +40,7 @@
                 case 'GameStarted': {
                     state.players = event.players.concat();
                     state.targets = event.targets.concat();
+                    state.slimes = event.slimes.concat();
                     state.hasStarted = true;
                     break;
                 }
@@ -96,6 +97,7 @@
         const state = {
             players: [],
             targets: [],
+            slimes: [],
             activeTarget: 0,
             time: 0,
             hasStarted: false,
@@ -118,6 +120,17 @@
             }
             ctx.restore();
             
+            for (const slime of state.slimes) {
+                const {x, y, size} = slime;
+                ctx.save();
+                ctx.fillStyle = '#002000';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, 2*Math.PI);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
             for (const [i, target] of state.targets.entries()) {
                 const {x, y} = target;
                 const isActive = state.activeTarget === i;

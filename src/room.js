@@ -30,7 +30,10 @@ class Room {
         const specIndex = this.connectedSpectators.indexOf(conn);
 
         if (playerIndex !== -1) {
-            this.game.stop();
+            if (this.game) {
+                this.game.stop();
+            }
+            
             this.broadcast({type: 'PlayerDisconnected', player: playerIndex});
             this.connectedPlayers.splice(playerIndex, 1);
             clearInterval(this.pumpHandle);

@@ -31,9 +31,9 @@ class Game extends BaseGame {
     }
 
     initTargets() {
+        this.targets = [];
         const numX = 5;
         const numY = 4;
-        this.targets = [];
         for (let x = 0; x < numX; x++) {
             for (let y = 0; y < numY; y++) {
                 const padding = this.width / 10;
@@ -47,10 +47,23 @@ class Game extends BaseGame {
             }
         }
     }
+
+    initSlimes() {
+        this.slimes = [];
+        const numSlimes = 3;
+        for (let i = 0; i < numSlimes; i++) {
+            this.slimes.push({
+                x: this.width / 2 + 0.3*this.width*Math.cos(Math.PI/2 + i*2*Math.PI/numSlimes),
+                y: this.height / 2 + 0.3*this.height*Math.sin(Math.PI/2 + i*2*Math.PI/numSlimes),
+                size: this.width/8,
+            });
+        }
+    }
     
     initGame() {
         this.initPlayers();
         this.initTargets();
+        this.initSlimes();
 
         this.currentTarget = 0;
     }
@@ -111,13 +124,15 @@ class Game extends BaseGame {
                 this.bufferEvent({type: 'PlayerTurned', player: i, angle: player.angle});
             }
         
+            const inSlime = this.slimes.filter(slime => distance(slime, player) < slime.size).length > 0;
+
             if (player.breaking) {
                 if (player.velocity > 0) {
                     player.velocity -= dt * 50;   
                 }
             } else {
                 player.velocity += dt * player.acceleration;
-                player.velocity = Math.min(player.velocity, 100);
+                player.velocity = Math.min(player.velocity, inSlime ? 25 : 100);
             }
             
             if (player.velocity !== 0) {
@@ -150,6 +165,7 @@ class Game extends BaseGame {
             type: 'GameStarted',
             players: this.players.map(player => ({x: player.x, y: player.y, angle: player.angle, score: player.score})),
             targets: this.targets.map(target => ({x: target.x, y: target.y})),
+            slimes: this.slimes.map(slime => ({x: slime.x, y: slime.y, size: slime.size})),
         });
     }
     
