@@ -6,6 +6,11 @@ class Game extends BaseGame {
         this.timeStep = 1000/30;
         this.width = 400;
         this.height = 300;
+        this.gameSettings = { // Make param later
+            maxAngularVelocity: 1.4,
+            maxVelocity: 100,
+            slimeSlownessFactor: 0.25,
+        }
         this.initGame();
     }
 
@@ -106,17 +111,23 @@ class Game extends BaseGame {
     }
 
     update() {
+        const {
+            maxAngularVelocity,
+            maxVelocity,
+            slimeSlownessFactor,
+        } = this.gameSettings;
+
         const distance = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
         const dt = this.timeStep / 1000;
         
-        // for (const [player, i] of this.players) {
+        // for (const [player, i] of this.players.entries()) {
         this.players.forEach((player, i) => {
             if (player.turning === false) {
                 player.angularVelocity -= dt * Math.sign(player.angularVelocity);
             }
             
             player.angularVelocity += dt * player.angularAcceleration;
-            player.angularVelocity = Math.sign(player.angularVelocity) * Math.min(1, Math.abs(player.angularVelocity));
+            player.angularVelocity = Math.sign(player.angularVelocity) * Math.min(maxAngularVelocity, Math.abs(player.angularVelocity));
             
             if (player.angularVelocity !== 0) {
                 player.angle += dt * player.angularVelocity;
@@ -132,7 +143,7 @@ class Game extends BaseGame {
                 }
             } else {
                 player.velocity += dt * player.acceleration;
-                player.velocity = Math.min(player.velocity, inSlime ? 25 : 100);
+                player.velocity = Math.min(player.velocity, (inSlime ? slimeSlownessFactor : 1) * maxVelocity);
             }
             
             if (player.velocity !== 0) {
