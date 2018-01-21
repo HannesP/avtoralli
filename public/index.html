@@ -84,6 +84,7 @@
             }[e.keyCode];
             if (type !== undefined) {
                 ws.send(JSON.stringify({type}));
+                e.preventDefault();
             }
         });
         
@@ -91,6 +92,7 @@
             const {keyCode} = e;
             if (keyCode === 37 || keyCode === 39) {
                 ws.send(JSON.stringify({type: 'PlayerStopTurning'}));
+                e.preventDefault();
             }
         });
         
