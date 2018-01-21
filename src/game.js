@@ -57,10 +57,11 @@ class Game extends BaseGame {
         this.slimes = [];
         const numSlimes = 3;
         for (let i = 0; i < numSlimes; i++) {
+            const a = Math.PI/2 + i*2*Math.PI/numSlimes;
             this.slimes.push({
-                x: this.width / 2 + 0.3*this.width*Math.cos(Math.PI/2 + i*2*Math.PI/numSlimes),
-                y: this.height / 2 + 0.3*this.height*Math.sin(Math.PI/2 + i*2*Math.PI/numSlimes),
-                size: this.width/8,
+                x: this.width / 2 + 0.3*this.width*Math.cos(a),
+                y: this.height / 2 + 0.3*this.height*Math.sin(a),
+                size: this.width/10,
             });
         }
     }
@@ -120,8 +121,7 @@ class Game extends BaseGame {
         const distance = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
         const dt = this.timeStep / 1000;
         
-        // for (const [player, i] of this.players.entries()) {
-        this.players.forEach((player, i) => {
+        for (const [i, player] of this.players.entries()) {
             if (player.turning === false) {
                 player.angularVelocity -= dt * Math.sign(player.angularVelocity);
             }
@@ -150,10 +150,14 @@ class Game extends BaseGame {
                 player.x += dt * Math.cos(player.angle) * player.velocity;
                 player.y -= dt * Math.sin(player.angle) * player.velocity;
                 
+                const oldX = player.x, oldY = player.y;
                 player.x = Math.min(player.x, this.width);
                 player.x = Math.max(player.x, 0);
                 player.y = Math.min(player.y, this.height);
                 player.y = Math.max(player.y, 0);
+                if (player.x !== oldX || player.y !== oldY) {
+                    player.velocity = 0;
+                }
                 
                 this.bufferEvent({type: 'PlayerMoved', player: i, x: player.x, y: player.y, velocity: player.velocity});
             }
@@ -166,8 +170,7 @@ class Game extends BaseGame {
                 player.score++;
                 this.bufferEvent({type: 'PlayerScored', player: i});
             }
-        });
-        // }
+        }
     }
     
     start() {
