@@ -6,6 +6,7 @@ class Room {
         this.connectedPlayers = [];
         this.connectedSpectators = [];
         this.game = null;
+        this.isDiscontinued;
     }
 
     connect(conn) {
@@ -33,6 +34,7 @@ class Room {
             this.broadcast({type: 'PlayerDisconnected', player: playerIndex});
             this.connectedPlayers.splice(playerIndex, 1);
             clearInterval(this.pumpHandle);
+            this.isDiscontinued = true;
         } else if (specIndex !== -1) {
             this.connectedSpectators.splice(specIndex, 1);
         }
@@ -57,7 +59,7 @@ class Room {
     isFilled() {
         return this.connectedPlayers.length == this.numParticipants;
     }
-    
+
     handleCommand(conn, command, params) {
         if (this.game === null) {
             return;

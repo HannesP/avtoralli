@@ -46,20 +46,28 @@ wsServer.on('request', req => {
         
         const conn = req.accept('echo-protocol', req.origin);
         const room = rooms[id];
-        room.connect(conn);
         
-        conn.on('message', msg => {
-            try {
-                const {type, params} = JSON.parse(msg.utf8Data);
-                room.handleCommand(conn, type, params || {});
-            } catch (err) {
-                console.error(err);
-            }
-        });
+        if (room.isDiscontinued) {
+            req.reject();
+        } else {
+            room.connect(conn);
         
-        conn.on('close', (code, desc) => {
-            room.disconnect(conn);
-        });
+            conn.on('message', msg => {
+                try {
+                    const {type, params} = JSON.parse(msg.utf8Data);
+                    room.handleCommand(conn, type, params || {});
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+            
+            conn.on('close', (code, desc) => {
+                room.disconnect(conn);
+                if (room.isDiscontinued) {
+                    delete rooms[id];
+                }
+            });
+        }
     } catch (err) {
         console.error('Request failed: ' + err);
     }
